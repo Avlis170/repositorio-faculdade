@@ -1,4 +1,4 @@
-name: CI/CD Pipeline Python
+name: CI/CD Pipeline Frontend
 
 on:
   push:
@@ -11,27 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Obter o código do repositório
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      # 2. Configurar o ambiente Python
-      - name: Configurar o Python
-        uses: actions/setup-python@v5
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: '20'
 
-      # 3. Instalar as dependências
       - name: Instalar dependências
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install pytest
+        run: npm ci || npm install
 
-      # 4 e 5. Executar testes e travar se falhar
       - name: Executar testes automatizados
-        run: |
-          pytest
+        run: npm test --if-present
 
   release:
     needs: test
@@ -42,13 +34,12 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      # 6. Gerar artefato
       - name: Gerar e carregar artefato
         uses: actions/upload-artifact@v4
         with:
           name: app-release-artifact
           path: |
             .
-            !tests/
+            !node_modules/
             !.git/
           retention-days: 30
